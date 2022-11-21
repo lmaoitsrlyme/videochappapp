@@ -19,6 +19,18 @@ const peerServer = ExpressPeerServer(server, {
 
 app.use("/peerjs", peerServer);
 
+var nodeMailer = require("nodemailer");
+
+const transporter = nodeMailer.createTransport({
+    port: 465,
+    host: "smtp.gmail.com",
+    auth: {
+        user: "ryanishanth@gmail.com",
+        pass: "nbktnqsymmxtpeob"
+    },
+    secure: true
+})
+
 app.get("/", (req, res) => {
     res.redirect(`/${uuidv4()}`);
 });
@@ -26,6 +38,24 @@ app.get("/", (req, res) => {
 app.get("/:room", (req, res) => {
     res.render("index", { roomId: req.params.room });
 });
+
+app.post("/send-mail", (req, res)=>{
+    const to = req.body.to
+    const url = req.body.url
+    const mailData = {
+        from: "ryanishanth@gmail.com",
+        to: to,
+        subject: "join the chat !Q!>@?@!?#?!@#$?@!?@!$",
+        html: `<p>hey there!!!!L!L!L!L!L!LL!</p><p>come and join me for this video chat!!!!!!!-${url}</p>`
+    }
+
+    transporter.sendMail(mailData, (error, info)=>{
+        if (error){
+            return console.log(error)
+        }
+        res.status(200).send({message: "invitation sent", message_id: info.messageId})
+    })
+})
 
 io.on("connection", (socket) => {
     socket.on("join-room", (roomId, userId, userName) => {
